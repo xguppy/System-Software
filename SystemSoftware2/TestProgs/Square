@@ -1,0 +1,6 @@
+width: equ 3
+height: equ 3
+square: int width * height
+prog:
+    iout square
+    end prog

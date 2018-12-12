@@ -1,0 +1,20 @@
+;Выводит "Less" если введёное число меньшле нуля и "Greater" если больше
+    org 150
+res: int 0
+str1: str |Less|
+str2: str |Greater|
+str3: str |Good bye|
+prog:
+    iin res
+    icmp res
+    jg abc
+    jl bca
+    go saygoodbye
+abc:
+    printstr str1
+    go saygoodbye
+bca:
+    printstr str2
+saygoodbye:
+    printstr str3
+    end prog

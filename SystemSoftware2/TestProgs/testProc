@@ -1,0 +1,13 @@
+    org 5000
+myRealVar: real -1e+3
+prog:
+    load myRealVar
+    call myProc
+    rout myRealVar
+    end prog
+
+myProc: proc            ;Функция, после главной(main) функции(Вызов функции вперёд)
+    rmul myRealVar
+    store myRealVar
+    ret
+    endproc myProc

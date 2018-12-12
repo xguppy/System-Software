@@ -1,0 +1,16 @@
+    org 1000
+digits: memint 2
+code:
+    iin digits + SINT
+    load digits + SINT
+    dec
+    store digits
+faq:
+    imul digits + SINT
+    store digits + SINT
+    load digits
+    dec
+    store digits
+    jg faq
+    iout digits + SINT
+    end code

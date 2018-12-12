@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+.idea
+cmake-build*
+
+bin
+obj

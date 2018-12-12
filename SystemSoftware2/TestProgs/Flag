@@ -1,0 +1,12 @@
+digit: int 0    ;Число
+bit: int 0      ;Номер бита
+addition: int 1 ;Для установки флага
+prog:
+    iin digit
+    iin bit
+    load addition
+    lshift bit
+    or digit
+    store digit
+    iout digit
+    end prog
