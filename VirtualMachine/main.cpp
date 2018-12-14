@@ -1,16 +1,15 @@
 #include <iostream>
-#include "Processor.h"
-#include "Loaders.h"
+#include "Debugger.h"
 using namespace std;
 
 int main(const int argc, char *argv[]) {
-    if(argc == 2)   // Если указан только файл
+    /*if(argc == 2)   // Если указан только файл
     {
         Processor &proc = Processor::Instance(0);   //Отпустить флаг трассировки
         Loader(argv[1], proc); //Загрузка бинарного файла
         proc.Run(); // Запуск
     }
-    if (argc == 3) {    //Если указан файл и флаг трассировки
+    else if (argc == 3) {    //Если указан файл и флаг трассировки
         Processor &proc = Processor::Instance(static_cast<uint8_t>(stoi(argv[2]))); // Получили флаг трассировки
         Loader(argv[1], proc); //Загрузка бинарного файла
         proc.Run(); // Запуск
@@ -27,6 +26,8 @@ int main(const int argc, char *argv[]) {
             Loader(argv[1], proc); //Загрузка бинарного файла
         }
         proc.Run(); // Запуск
-    }
+    }*/
+    Debugger dbg("test.bin");
+    dbg.Run();
     return 0;
 }

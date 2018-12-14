@@ -5,13 +5,14 @@
 #include <limits>
 #include <stack>
 
-constexpr float eps = std::numeric_limits<float>::epsilon();
-
 using address = unsigned short;
 using byte = unsigned char;
 using Memory = std::vector<byte>;
 
-#pragma pack(push,1)
+static constexpr byte numberBreakPoints = 8;
+constexpr float eps = std::numeric_limits<float>::epsilon();
+
+#pragma pack(push, 1)
 struct command
 {
     byte opcode: 7; //Код операции
@@ -29,8 +30,15 @@ union data
 union MemoryUnion
 {
     data dat;
-    command cmd;    //В случае с коммандой читать 3 байта
+    command cmd;    //В случае с командой читать 3 байта
     byte bytes[4];
+};
+
+enum BreakPointsMode: byte
+{
+    Read = 1,
+    Write = 2,
+    Execute = 4
 };
 
 struct Registers
@@ -42,14 +50,19 @@ struct Registers
         unsigned short EF: 1;       //Флаг окончания работы процессора
         unsigned short ER: 1;       //Флаг ошибки
         unsigned short JP: 1;       //Флаг перехода, чтобы не увеличивать счётчик
-        unsigned short: 10;         //Резерв
+        unsigned short BF: 1;       //Флаг работы точек остановы
+        unsigned short: 9;         //Резерв
     } PSW{};
+    struct {
+        byte isOn: 1;              //Включена ли точка остановы
+        BreakPointsMode mode;       //Режим точки остановы(Read, Write, Execute)
+        address addr;             //Адрес
+    } BreakPoints[numberBreakPoints]{};
     address AddrReg{};              //Адресный регистр
     data SummatorReg{};             //Сумматор
     command ExecuteCommand{};       //Собранная комманда
     //Стек вызовов в регистровом файле как в микроконтроллере Intel 8051
     std::stack<address> addrStack;
 };
-
 #pragma pack(pop)
 #endif //SYSTEMSOFTWARE1_TYPE_H

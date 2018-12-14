@@ -16,15 +16,22 @@ private:
     Registers regs_{};
     // Комманды
     std::vector<Command*> commands_;
+    // Режим команд(Использует флаги в битовом перечислении)
+    std::vector<byte> cmdMode_;
+    // Лог(Информаццция работы)
+    std::string logT_;
     //Перезагрузка ПК
     void Reset() noexcept;
 
     //Инициализация
     void InitCmd() noexcept;
-
+    //Изменить точку
+    void SetBp(address addr, byte isOn, BreakPointsMode mode, address numBP) noexcept;
+    void RemoveBp(address numBP) noexcept;
     //Конструктор по умолчанию будет в private
     Processor() = default;
 public:
+    friend class Debugger;
     //Удаляем конструктор копирования
     Processor(const Processor &root) = delete;
 
@@ -44,7 +51,7 @@ public:
     void SetIp(address ip) noexcept;
 
     //Трассировка
-    void Trace() const noexcept;
+    std::stringstream Trace() const noexcept;
 
     //Получить данные из памяти
     static command GetCommand(const Memory &mem, address i) noexcept;
