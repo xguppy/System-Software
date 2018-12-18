@@ -11,7 +11,7 @@ using namespace std;
 
 //====Перечисления для конечного автомата
 //Состояния
-enum States: uint8_t//9  состояний
+enum States: uint8_t       //9  состояний
 {
     Start,                // Стартовое состояние
     WaitingOperations,     // Ожидание кода операции
