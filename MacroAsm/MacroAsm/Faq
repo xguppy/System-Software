@@ -1,0 +1,56 @@
+value: define 135+177
+abc: define value*2  
+    undef value 
+    org 1000
+    ifdef value
+        iin digits + SINT
+        load digits + SINT
+    endif
+    ifndef value
+        iout digits
+    endif
+mull: macro a, b
+        load @a
+        imul @b
+        store @b
+    endmacro
+    
+    repeat 10
+        imul 2
+    endrepeat
+    
+    foreach 2,3,4
+        iadd @val@
+    endeach
+    
+    if 5<3
+        iiiii 333
+    else
+        iaddiad 256
+    endif
+    
+    while abc>600
+        advv 222
+abc: define abc-10
+    endwhile
+    
+    mull 1,2
+    
+    iin dig + #abc
+digits: memint 2
+code:
+    iin digits + SINT
+    load digits + SINT
+    dec
+    store digits
+faq:
+    imul digits + SINT
+    store digits + SINT
+    load digits
+    dec
+    store digits
+    jg faq
+    iout digits + SINT
+    end code
+    
+    include FileClassic.txt
