@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using IronPython.Hosting;
-using Microsoft.Scripting.Hosting;
 
 namespace MacroAsm
 {
@@ -9,16 +6,19 @@ namespace MacroAsm
     {
         static void Main(string[] args)
         {
-            if (args.Length != 2) throw new ArgumentException("Неверное количество аргументов ком. строки");
-            var macroAssembly = new MacroAssembly(args[0]);
+            if (args.Length != 2)
+            {
+                Console.WriteLine($"Неверное количество аргументов ком. строки вы ввели {args.Length} , а требуется 2");
+                return;
+            }
             try
             {
+                var macroAssembly = new MacroAssembly(args[0]);
                 macroAssembly.Work(args[1]);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                throw;
             }
         }
     }

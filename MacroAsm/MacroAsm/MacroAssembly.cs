@@ -10,7 +10,7 @@ namespace MacroAsm
     /// <summary>
     /// Макроассемблер
     /// </summary>
-    public class MacroAssembly
+    public sealed class MacroAssembly
     {
         //Макрофункция
         private delegate int MacroFunc(int number);
@@ -35,7 +35,7 @@ namespace MacroAsm
         /// <param name="inputFileName">Входной файл</param>
         public MacroAssembly(string inputFileName)
         {
-            if (!File.Exists(inputFileName)) throw new IOException();
+            if (!File.Exists(inputFileName)) throw new IOException($"Не удаётся открыть файл {inputFileName}");
             //Опредение области видимости
             _nameTable = _engine.CreateScope();
             //Определение макрофункций
@@ -239,14 +239,25 @@ namespace MacroAsm
         /// <param name="outputFileName">Выходной файл макроассемблера</param>
         public void Work(string outputFileName)
         {
-            ExecuteLines(0);
-            using (var writeStream = new StreamWriter(outputFileName))
+            try
             {
-                foreach (var line in _asmProgram)
+                ExecuteLines(0);
+            }
+            catch (Exception e)
+            {
+                _asmProgram.Add(e.Message);
+                throw;
+            }
+            finally
+            {
+                using (var writeStream = new StreamWriter(outputFileName))
                 {
-                    if (line.Trim().Length != 0)
+                    foreach (var line in _asmProgram)
                     {
-                        writeStream.WriteLine(line);
+                        if (line.Trim().Length != 0)
+                        {
+                            writeStream.WriteLine(line);
+                        }
                     }
                 }
             }
@@ -319,7 +330,7 @@ namespace MacroAsm
         //Удаление переменной
         private int UnDef(int number)
         {
-            if (_operators[number].Arguments.Length != 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции undef  на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length != 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции undef на строке {_operators[number].Number}");
             if (!_nameTable.RemoveVariable(_operators[number].Arguments[0]))
             {
                 throw new ArgumentNullException();
@@ -329,16 +340,14 @@ namespace MacroAsm
 
         private int IfDef(int number)
         {
-            if(_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции ifdef  на строке {_operators[number].Number}");
+            if(_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции ifdef на строке {_operators[number].Number}");
             bool existElseToken = false;    //был ли найден токен "else"
             bool existEndToken = false;    //был ли найден токен "end"
             int lineOp = _operators[number].Number;
-            if (_nameTable.ContainsVariable(_operators[number].Arguments[0]))
+            if (_nameTable.ContainsVariable(_operators[number++].Arguments[0]))
             {
                 while (number < _operators.Count && !existEndToken)
-                {
-                    ++number;
-                    
+                {                
                     //Если встретился токен "else" то меняем логику
                     if (_operators[number].Code == MacroToken.@else.ToString())
                     {
@@ -353,7 +362,11 @@ namespace MacroAsm
                     if (existElseToken == false && existEndToken == false)
                     {
                         //Исполняем
-                        Exec(number);
+                        number = Exec(number);
+                    }
+                    else
+                    {
+                        ++number;
                     }
                 }
             }
@@ -361,7 +374,6 @@ namespace MacroAsm
             {
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     //Если встретился токен "else" то меняем логику
                     if (_operators[number].Code == MacroToken.@else.ToString())
                     {
@@ -376,7 +388,11 @@ namespace MacroAsm
                     if (existElseToken && existEndToken == false)
                     {
                         //Исполняем
-                        Exec(number);
+                        number = Exec(number);
+                    }
+                    else
+                    {
+                        ++number;
                     }
                 }
             }
@@ -384,7 +400,7 @@ namespace MacroAsm
             {
                 throw new Exception($"Нет директивы endif для конструкции на строке {lineOp}");
             }
-            return ++number;
+            return number;
         }
 
         private int IfNDef(int number)
@@ -393,11 +409,10 @@ namespace MacroAsm
             bool existElseToken = false; //был ли найден токен "else"
             bool existEndToken = false; //был ли найден токен "end"
             int lineOp = _operators[number].Number;
-            if (_nameTable.ContainsVariable(_operators[number].Arguments[0]))
+            if (_nameTable.ContainsVariable(_operators[number++].Arguments[0]))
             {
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     //Если встретился токен "else" то меняем логику
                     if (_operators[number].Code == MacroToken.@else.ToString())
                     {
@@ -409,10 +424,14 @@ namespace MacroAsm
                     }
                     
                     //Есди встретился токен "else" то исполняем
-                    if (existElseToken == false && existEndToken == false)
+                    if (existElseToken && existEndToken == false)
                     {
                         //Исполняем
-                        Exec(number);
+                        number = Exec(number);
+                    }
+                    else
+                    {
+                        ++number;
                     }
                 }
             }
@@ -420,7 +439,6 @@ namespace MacroAsm
             {
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     //Если встретился токен "else" то меняем логику
                     if (_operators[number].Code == MacroToken.@else.ToString())
                     {
@@ -432,10 +450,14 @@ namespace MacroAsm
                         existEndToken = true;
                     }
                     //Есди не встретился токен "else" то исполняем
-                    if (existElseToken && existEndToken == false)
+                    if (existElseToken == false && existEndToken == false)
                     {
                         //Исполняем
-                        Exec(number);
+                        number = Exec(number);
+                    }
+                    else
+                    {
+                        ++number;
                     }
 
                     
@@ -446,7 +468,7 @@ namespace MacroAsm
                 throw new Exception($"Нет директивы endif для конструкции на строке {lineOp}");
             }
 
-        return ++number;
+        return number;
         }
 
         private int Macro(int number)
@@ -483,11 +505,10 @@ namespace MacroAsm
             bool existElseToken = false; //был ли найден токен "else"
             bool existEndToken = false; //был ли найден токен "end"
             int lineOp = _operators[number].Number;
-            if (_engine.Execute<bool>(_operators[number].Arguments[0], _nameTable))
+            if (_engine.Execute<bool>(_operators[number++].Arguments[0], _nameTable))
             {
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     //Если встретился токен "else" то меняем логику
                     if (_operators[number].Code == MacroToken.@else.ToString())
                     {
@@ -501,7 +522,11 @@ namespace MacroAsm
                     if (existElseToken == false && existEndToken == false)
                     {
                         //Исполняем
-                        Exec(number);
+                        number = Exec(number);
+                    }
+                    else
+                    {
+                        ++number;
                     }
                 }
             }
@@ -509,7 +534,6 @@ namespace MacroAsm
             {
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     //Если встретился токен "else" то меняем логику
                     if (_operators[number].Code == MacroToken.@else.ToString())
                     {
@@ -524,7 +548,11 @@ namespace MacroAsm
                     if (existElseToken && existEndToken == false)
                     {
                         //Исполняем
-                        Exec(number);
+                        number = Exec(number);
+                    }
+                    else
+                    {
+                        ++number;
                     }
                 }
             }
@@ -534,22 +562,21 @@ namespace MacroAsm
                 throw new Exception($"Нет директивы endif для конструкции на строке {lineOp}");
             }
 
-            return ++number;
+            return number;
         }
 
         private int Repeat(int number)
         {
             if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции repeat на строке {_operators[number].Number}");
             var repeateCount =_engine.Execute<int>(_operators[number].Arguments[0], _nameTable);
-            int startNumber = number;
+            int startNumber = number + 1;
             int endNumber = number;
-            int lineOp = _operators[number].Number;
+            int lineOp = _operators[number++].Number;
             while (repeateCount > 0)
             {
                 bool existEndToken = false; //был ли найден токен "end"
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     if (_operators[number].Code == MacroToken.endrepeat.ToString())
                     {
                         existEndToken = true;
@@ -558,8 +585,9 @@ namespace MacroAsm
 
                     if (existEndToken == false)
                     {
-                        Exec(number);    
+                        number = Exec(number);    
                     }
+                    
                 }
                 --repeateCount;
                 number = startNumber;
@@ -577,12 +605,11 @@ namespace MacroAsm
             int startNumber = number;
             int endNumber = number;
             int lineOp = _operators[number].Number;
-            while (_engine.Execute<bool>(_operators[number].Arguments[0], _nameTable))
+            while (_engine.Execute<bool>(_operators[number++].Arguments[0], _nameTable))
             {
                 bool existEndToken = false; //был ли найден токен "end"
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     if (_operators[number].Code == MacroToken.endwhile.ToString())
                     {
                         existEndToken = true;
@@ -590,7 +617,7 @@ namespace MacroAsm
                     }
                     if (existEndToken == false)
                     {
-                        Exec(number);
+                        number = Exec(number);
                     }
                 }
                 number = startNumber;
@@ -606,15 +633,14 @@ namespace MacroAsm
         {
             if (_operators[number].Arguments.Length == 0) throw new ArgumentException($"Отсутсвуют аргументы для конструкции foreach на строке {_operators[number].Number}");
             var op = _operators[number];
-            int startNumber = number;
+            int startNumber = number + 1;
             int endNumber = number;
-            int lineOp = _operators[number].Number;
+            int lineOp = _operators[number++].Number;
             foreach (var arg in op.Arguments)
             {
                 bool existEndToken = false; //был ли найден токен "end"
                 while (number < _operators.Count && !existEndToken)
                 {
-                    ++number;
                     
                     if (_operators[number].Code == MacroToken.endeach.ToString())
                     {
@@ -625,8 +651,8 @@ namespace MacroAsm
                     if (existEndToken == false)
                     {
                         string strTmp = _operators[number].Source.Replace(forEachToken, arg);
-                        _asmProgram.Add(strTmp);    
-                        
+                        _asmProgram.Add(strTmp);
+                        ++number;
                     }
                     
                 }

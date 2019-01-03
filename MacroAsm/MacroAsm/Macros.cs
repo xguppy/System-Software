@@ -9,8 +9,8 @@ namespace MacroAsm
     public class Macros
     {
         private const char ParamChar = '@';
-        private string[] _parames;
-        private List<string> _data;
+        private readonly string[] _parames;
+        private readonly List<string> _data;
         /// <summary>
         /// Конструктор макроса
         /// </summary>
@@ -27,10 +27,10 @@ namespace MacroAsm
         /// </summary>
         /// <param name="args">Список реальных аргументов</param>
         /// <returns>Строки ассемблера</returns>
-        /// <exception cref="ArgumentException">Если не то количество</exception>
+        /// <exception cref="ArgumentException">Если не то количество аргументов</exception>
         public List<string> Run(string[] args)
         {
-            if (args.Length != _parames.Length) throw new ArgumentException();
+            if (args.Length != _parames.Length) throw new ArgumentException("Неверное количество аргументов");
             
             var res = new List<string>();
             foreach (var element in _data)
@@ -38,7 +38,7 @@ namespace MacroAsm
                 string tmp = element;
                 for (int i = 0; i < _parames.Length; i++)
                 {
-                    tmp = tmp.Replace(ParamChar + _parames[i], args[i]);
+                    tmp = tmp.Replace( $"{ParamChar}{_parames[i]}", args[i]);
                 }
                 res.Add(tmp);
             }
