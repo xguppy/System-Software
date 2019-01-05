@@ -14,7 +14,6 @@ namespace MacroAsm
         /// <summary>
         /// Конструктор макроса
         /// </summary>
-        /// <param name="name">Имя макроса</param>
         /// <param name="parames">Параметры</param>
         /// <param name="data">Тело макроса</param>
         public Macros(string[] parames, List<string> data)

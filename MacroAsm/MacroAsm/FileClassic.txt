@@ -1,1 +1,1 @@
-    mull 500,300
+    mull num,digits

@@ -17,11 +17,11 @@ namespace MacroAsm
         //Движок интерпретатора Python 2
         private readonly ScriptEngine _engine = Python.CreateEngine();
         //Область видимости(Переменные, функции и проч.)
-        private ScriptScope _nameTable;
+        private readonly ScriptScope _nameTable;
         //Код на макроассемблере
         private readonly List<Operator> _operators = new List<Operator>();
         //Выходной код на ассемблере
-        private List<string> _asmProgram = new List<string>();
+        private readonly List<string> _asmProgram = new List<string>();
         //Макрофункции
         private readonly Dictionary<string, MacroFunc> _funcs = new Dictionary<string, MacroFunc>();
         //Макросы
@@ -260,6 +260,8 @@ namespace MacroAsm
                         }
                     }
                 }
+
+                Console.WriteLine("Finish");
             }
         }
         
@@ -282,7 +284,7 @@ namespace MacroAsm
             }
             else if (_operators[number].Code != null && MacroToken.TryParse(_operators[number].Code, false, out MacroToken typeLex))
             {
-                throw new Exception($"Нет объявленной лексемы для {typeLex}");
+                throw new Exception($"Нет объявленной директивы для {typeLex}");
             }
             else
             {
@@ -322,7 +324,7 @@ namespace MacroAsm
         ////Функции макроассемблера
         private int Def(int number)
         {
-            if (_operators[number].Arguments.Length != 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции define на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length != 1) throw new ArgumentException($"Неверное количество аргументов для конструкции define на строке {_operators[number].Number}");
             _nameTable.SetVariable(_operators[number].Label, _engine.Execute(_operators[number].Arguments[0], _nameTable));
             return ++number;
         }
@@ -330,7 +332,7 @@ namespace MacroAsm
         //Удаление переменной
         private int UnDef(int number)
         {
-            if (_operators[number].Arguments.Length != 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции undef на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length != 1) throw new ArgumentException($"Неверное количество аргументов для конструкции undef на строке {_operators[number].Number}");
             if (!_nameTable.RemoveVariable(_operators[number].Arguments[0]))
             {
                 throw new ArgumentNullException();
@@ -340,7 +342,7 @@ namespace MacroAsm
 
         private int IfDef(int number)
         {
-            if(_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции ifdef на строке {_operators[number].Number}");
+            if(_operators[number].Arguments.Length > 1) throw new ArgumentException($"Неверное количество аргументов для конструкции ifdef на строке {_operators[number].Number}");
             bool existElseToken = false;    //был ли найден токен "else"
             bool existEndToken = false;    //был ли найден токен "end"
             int lineOp = _operators[number].Number;
@@ -405,7 +407,7 @@ namespace MacroAsm
 
         private int IfNDef(int number)
         {
-            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции ifndef на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Неверное количество аргументов для конструкции ifndef на строке {_operators[number].Number}");
             bool existElseToken = false; //был ли найден токен "else"
             bool existEndToken = false; //был ли найден токен "end"
             int lineOp = _operators[number].Number;
@@ -501,7 +503,7 @@ namespace MacroAsm
 
         private int If(int number)
         {
-            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции if на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Неверное количество аргументов для конструкции if на строке {_operators[number].Number}");
             bool existElseToken = false; //был ли найден токен "else"
             bool existEndToken = false; //был ли найден токен "end"
             int lineOp = _operators[number].Number;
@@ -567,7 +569,7 @@ namespace MacroAsm
 
         private int Repeat(int number)
         {
-            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции repeat на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Неверное количество аргументов для конструкции repeat на строке {_operators[number].Number}");
             var repeateCount =_engine.Execute<int>(_operators[number].Arguments[0], _nameTable);
             int startNumber = number + 1;
             int endNumber = number;
@@ -601,7 +603,7 @@ namespace MacroAsm
 
         private int While(int number)
         {
-            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Отсутсвуют аргументы для конструкции while на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length > 1) throw new ArgumentException($"Неверное количество аргументов для конструкции while на строке {_operators[number].Number}");
             int startNumber = number;
             int endNumber = number;
             int lineOp = _operators[number].Number;
@@ -631,7 +633,7 @@ namespace MacroAsm
         
         private int ForEach(int number)
         {
-            if (_operators[number].Arguments.Length == 0) throw new ArgumentException($"Отсутсвуют аргументы для конструкции foreach на строке {_operators[number].Number}");
+            if (_operators[number].Arguments.Length == 0) throw new ArgumentException($"Неверное количество аргументов для конструкции foreach на строке {_operators[number].Number}");
             var op = _operators[number];
             int startNumber = number + 1;
             int endNumber = number;
